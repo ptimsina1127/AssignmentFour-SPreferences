@@ -10,6 +10,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.assignmentfour_spreferences.data.User;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class StartActivity extends AppCompatActivity {
     private Button signUpButton,loginButton,aboutButton,dashboardButton;
     @Override
@@ -19,6 +29,9 @@ public class StartActivity extends AppCompatActivity {
 
         Log.e("LifeofAndroidAPP","onCreate");
         Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show();
+
+        //Testing of data in internal storage
+        checkDataInInternalStorage();
 
         initializeViews();
 
@@ -31,6 +44,7 @@ public class StartActivity extends AppCompatActivity {
         loginButton.setOnClickListener(view ->{
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
+
         });
         aboutButton.setOnClickListener(view ->{
 
@@ -80,7 +94,7 @@ public class StartActivity extends AppCompatActivity {
     }
     @Override
     protected void onStop() {
-        Log.e("LifeofAndroidAPP","onStop");
+        Log.e("LifeofAndroidAPP", "onStop");
         Toast.makeText(this, "onStop", Toast.LENGTH_SHORT).show();
         super.onStop();
     }
@@ -91,4 +105,33 @@ public class StartActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private void checkDataInInternalStorage() {
+        try {
+            FileInputStream fis = openFileInput("users_data.json");
+            InputStreamReader inputStreamReader = new InputStreamReader(fis);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
+            }
+            fis.close();
+            String usersDataString = stringBuilder.toString();
+            Log.d("UsersData", usersDataString);
+            // Now you have the users data in the usersDataString variable
+            // You can parse it into JSON and extract the values if needed
+            JSONArray usersArray = new JSONArray(usersDataString);
+            for (int i = 0; i < usersArray.length(); i++) {
+                JSONObject userData = usersArray.getJSONObject(i);
+                Log.d("UserData", userData.toString());
+                // Extract user data here and do whatever you need
+            }
+        } catch (FileNotFoundException e) {
+            Log.e("FileNotFound", "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e("IOException", "Error reading file: " + e.toString());
+        } catch (JSONException e) {
+            Log.e("JSONException", "Error parsing JSON: " + e.toString());
+        }
+    }
 }

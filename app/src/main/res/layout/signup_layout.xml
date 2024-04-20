@@ -203,6 +203,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
         android:layout_weight="1"
         android:text="Select Country :" />
     <Spinner

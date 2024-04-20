@@ -1,6 +1,8 @@
 package com.example.assignmentfour_spreferences;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +20,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.assignmentfour_spreferences.adapters.Country;
 import com.example.assignmentfour_spreferences.adapters.CountryAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -150,12 +162,96 @@ public class MainActivity extends AppCompatActivity {
             //Validate the data
 
             // Call api to send data...
-            // Save data to the database
+            // Save data to the database, Here its internal Storage
+            try {
+                saveDataToInternalStorage(name,email,password,about,dob,gender,courses,country.getName());
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
             //
+            Intent intent = new Intent(this, StartActivity.class);
+            startActivity(intent);
+            finish();
         });
 
 
     }
+    private String getSelectedGender() {
+        int selectedId = genderGroup.getCheckedRadioButtonId();
+        if (selectedId == -1) {
+            return "";
+        }
+        RadioButton selectedRadioButton = findViewById(selectedId);
+        return selectedRadioButton.getText().toString();
+    }
+
+    private String getSelectedCourses() {
+        StringBuilder courses = new StringBuilder();
+        if (javaCheck.isChecked()) {
+            courses.append("Java");
+        }
+        if (pythonCheck.isChecked()) {
+            if (courses.length() > 0) {
+                courses.append(", ");
+            }
+            courses.append("Python");
+        }
+        if (androidCheck.isChecked()) {
+            if (courses.length() > 0) {
+                courses.append(", ");
+            }
+            courses.append("Android");
+        }
+        return courses.toString();
+    }
+    private void saveDataToInternalStorage(String name, String email, String password, String about, String dob, String gender, String courses, String country) throws IOException, JSONException {
+        // Read existing data if any
+        JSONArray usersArray = new JSONArray();
+        try {
+            FileInputStream fis = openFileInput("users_data.json");
+            InputStreamReader inputStreamReader = new InputStreamReader(fis);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
+            }
+            fis.close();
+            String existingData = stringBuilder.toString();
+            if (!existingData.isEmpty()) {
+                usersArray = new JSONArray(existingData);
+            }
+        } catch (FileNotFoundException e) {
+            Log.e("FileNotFound", "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e("IOException", "Error reading file: " + e.toString());
+        }
+
+        // Create JSON object for new user data
+        JSONObject userData = new JSONObject();
+        try {
+            userData.put("name", name);
+            userData.put("email", email);
+            userData.put("password", password);
+            userData.put("about", about);
+            userData.put("dob", dob);
+            userData.put("gender", gender);
+            userData.put("courses", courses);
+            userData.put("country", country);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // Add the new user data to the array
+        usersArray.put(userData);
+
+        // Save the updated array to internal storage
+        FileOutputStream fos = openFileOutput("users_data.json", Context.MODE_PRIVATE);
+        fos.write(usersArray.toString().getBytes());
+        fos.close();
+        Toast.makeText(this, "Data saved successfully", Toast.LENGTH_SHORT).show();
+    }
+
 
     public void initializeviews() {
         //button is referenced to UI's signup button
