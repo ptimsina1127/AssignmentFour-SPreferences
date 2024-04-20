@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Custom edit text colors-->
+    <color name ="edit_text_background_color">#E7E7F2</color>
+    <color name="edit_text_border_color">#DF1F1F</color>
+</resources>
