@@ -1,8 +1,11 @@
 package com.example.assignmentfour_spreferences;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -21,6 +24,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private Button login, clear;
     private EditText userName, userPassword;
+    private CheckBox keepLoggedInCheckbox;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,10 +34,37 @@ public class LoginActivity extends AppCompatActivity {
 
         initializeViews();
 
+        sharedPreferences = getSharedPreferences("login_prefs", Context.MODE_PRIVATE);
+        boolean keepLoggedIn = sharedPreferences.getBoolean("keep_logged_in", false);
+        keepLoggedInCheckbox.setChecked(keepLoggedIn);
+
+        if (keepLoggedIn) {
+            // If "Keep You Logged In" is checked, prepopulate email and password fields
+            String savedEmail = sharedPreferences.getString("saved_email", "");
+            String savedPassword = sharedPreferences.getString("saved_password", "");
+            userName.setText(savedEmail);
+            userPassword.setText(savedPassword);
+        }
+
         login.setOnClickListener(view -> {
             //Get the entered username and password
             String username = userName.getText().toString();
             String password = userPassword.getText().toString();
+
+            // Save the "Keep You Logged In" state to shared preferences
+            boolean keepLoggedInState = keepLoggedInCheckbox.isChecked();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("keep_logged_in", keepLoggedInState);
+            // If "Keep You Logged In" is checked, save the email and password
+            if (keepLoggedInState) {
+                editor.putString("saved_email", username);
+                editor.putString("saved_password", password);
+            } else {
+                // Clear saved email and password if "Keep You Logged In" is unchecked
+                editor.remove("saved_email");
+                editor.remove("saved_password");
+            }
+            editor.apply();
 
             // Perform login authentication here
             if (isValid(username, password)) {
@@ -55,6 +87,7 @@ public class LoginActivity extends AppCompatActivity {
         clear = findViewById(R.id.clear);
         userName = findViewById(R.id.email_input);
         userPassword = findViewById(R.id.password_input);
+        keepLoggedInCheckbox = findViewById(R.id.checkBox);
     }
 
     // Method to validate username and password
